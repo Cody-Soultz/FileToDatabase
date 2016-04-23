@@ -1,58 +1,36 @@
-/**
- * 
- */
 package myCustomDataBaseSolution;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-
+ 
 /**
- * @author Cody Soultz
+ * This program demonstrates making JDBC connection to a SQLite database.
+ * @author www.codejava.net
  *
  */
 public class DatabaseHandler {
-    private String jdbcDriver = "com.mysql.jdbc.Driver";
-    private String dbAddress = "jdbc:mysql://localhost:3306/";
-    private String userPass = "?user=root&password=";
-    private String dbName = "TIGER";
-    private String userName = "root";
-    private String password = "";
-
-    private PreparedStatement statement;
-    private ResultSet result;
-    private Connection con;
-
-    public DatabaseHandler() {
-
+ 
+    public static void main(String[] args) {
         try {
-        	createDatabase();
-        	Class.forName(jdbcDriver);
-            con = DriverManager.getConnection(dbAddress + dbName, userName, password);
-        } 
-
-        catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } 
-        catch (SQLException e) {
-            createDatabase();
+            Class.forName("org.sqlite.JDBC");
+            String dbURL = "jdbc:sqlite:product.db";
+            Connection conn = DriverManager.getConnection(dbURL);
+            if (conn != null) {
+                System.out.println("Connected to the database");
+                DatabaseMetaData dm = (DatabaseMetaData) conn.getMetaData();
+                System.out.println("Driver name: " + dm.getDriverName());
+                System.out.println("Driver version: " + dm.getDriverVersion());
+                System.out.println("Product name: " + dm.getDatabaseProductName());
+                System.out.println("Product version: " + dm.getDatabaseProductVersion());
+                conn.close();
+                System.out.println("Done");
+            }
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
-
-    private void createDatabase() {
-        try {
-        Class.forName(jdbcDriver);
-        con = DriverManager.getConnection(dbAddress + userPass);
-        Statement s = con.createStatement();
-        //int myResult = s.executeUpdate("CREATE DATABASE " + dbName);
-        int myResult = statement.executeUpdate("CREATE DATABASE IF NOT EXISTS TIGER;");
-        } 
-        catch (ClassNotFoundException | SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-    }
+}
