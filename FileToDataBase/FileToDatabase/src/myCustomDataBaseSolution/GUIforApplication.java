@@ -39,8 +39,8 @@ public class GUIforApplication extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	private JTextField pinName;
-	private JLabel pinText;
+	private JTextField penName;
+	private JLabel penText;
 
 	private JTextField fileName;
 	private JLabel fileText;
@@ -49,7 +49,7 @@ public class GUIforApplication extends JFrame {
 	private JButton submit;
 
 	private boolean goodFileName = false;
-	private boolean goodPinName = false;
+	private boolean goodPenName = false;
 	
 	private boolean isDirectory = false;
 	private Path filePath = null;
@@ -60,15 +60,15 @@ public class GUIforApplication extends JFrame {
 
 		int[] objectPadding = { 0, 0, 5, 5 };
 
-		GridBagConstraints pinTextSetup = MySetup(0, 0, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
-		pinText = new JLabel("Pin Name");
-		pinText.setHorizontalAlignment(SwingConstants.LEFT);
-		add(pinText, pinTextSetup);
+		GridBagConstraints penTextSetup = MySetup(0, 0, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
+		penText = new JLabel("Pen Name (Numbers Only XXXX)");
+		penText.setHorizontalAlignment(SwingConstants.LEFT);
+		add(penText, penTextSetup);
 
-		GridBagConstraints pinNameSetup = MySetup(0, 1, 1, 8, GridBagConstraints.HORIZONTAL, objectPadding);
-		pinName = new JTextField();
-		pinName.setHorizontalAlignment(SwingConstants.LEFT);
-		add(pinName, pinNameSetup);
+		GridBagConstraints penNameSetup = MySetup(0, 1, 1, 8, GridBagConstraints.HORIZONTAL, objectPadding);
+		penName = new JTextField();
+		penName.setHorizontalAlignment(SwingConstants.LEFT);
+		add(penName, penNameSetup);
 
 		GridBagConstraints fileTextSetup = MySetup(0, 3, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
 		fileText = new JLabel("File Name");
@@ -92,17 +92,48 @@ public class GUIforApplication extends JFrame {
 		browse.setHorizontalAlignment(SwingConstants.LEFT);
 		add(browse, browseNameSetup);
 
-		pinName.addKeyListener(new pinNameKeyHandler());
+		penName.addKeyListener(new penNameKeyHandler());
 		submit.addActionListener(new submitButtonHandler());
 		browse.addActionListener(new browseButtonHandler());
 	}
 
-	private class pinNameKeyHandler implements KeyListener {
+	private class penNameKeyHandler implements KeyListener {
 
 		@Override
 		public void keyTyped(KeyEvent e) {
-			goodPinName=true;
-			if (goodFileName&&goodPinName)
+			//goodPenName=true;
+			char keyPressed=e.getKeyChar();
+			String procesedString=penName.getText().concat(Character.toString(keyPressed));
+			if(!Character.toString(procesedString.charAt((procesedString.length()-1))).matches("[0-9]"))
+			{
+				procesedString= procesedString.substring(0,procesedString.length()-1);//if end character not a character
+			}
+			//System.out.println(procesedString);
+			//System.out.println("length = "+procesedString.length());
+			if(!(e.isActionKey()))
+			{
+				if(Character.isDigit(keyPressed)){
+					if(procesedString.length()==4){
+						goodPenName=true;
+					}
+					else if(procesedString.length()>4){
+						e.consume();
+					}
+					else{
+						goodPenName=false;
+					}
+				}
+				else{
+					e.consume();
+					if(procesedString.length()==4){
+						goodPenName=true;
+					}
+					else{
+						goodPenName=false;
+					}
+				}
+			}
+			if (goodFileName&&goodPenName)
 			{
 				submit.setEnabled(true);
 			}
@@ -110,6 +141,7 @@ public class GUIforApplication extends JFrame {
 			{
 				submit.setEnabled(false);
 			}
+			//System.out.println("good name: "+goodFileName+"||good pen: "+goodPenName);
 		}
 
 		@Override
@@ -119,7 +151,6 @@ public class GUIforApplication extends JFrame {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
-			
 		}
 
 	}
@@ -129,7 +160,7 @@ public class GUIforApplication extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ProcessFile myFileProcesser= new ProcessFile(pinName.getText());
+				ProcessFile myFileProcesser= new ProcessFile(penName.getText());
 				if(isDirectory){
 					myFileProcesser.ProcessMultibleFiles(filePath);
 				}else{
@@ -160,7 +191,7 @@ public class GUIforApplication extends JFrame {
 			if (thisFilePath != null && Files.exists(thisFilePath)){
 				setFilePath(thisFilePath);
 				goodFileName=true;
-				if (goodFileName&&goodPinName)
+				if (goodFileName&&goodPenName)
 				{
 					submit.setEnabled(true);
 				}

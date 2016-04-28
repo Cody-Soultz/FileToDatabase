@@ -2,12 +2,12 @@ package myCustomDataBaseSolution;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.stream.Stream;
 
 /**
@@ -18,18 +18,19 @@ public class ProcessFile {
 	 * file path to use
 	 */
 	private String file = "";
-	String pinName=null;
+	String penName=null;
 	private DatabaseHandler myHandler= new DatabaseHandler();
-	private PrintWriter writer=null;
 	private String line=null;
 	private int lineOffsetAudioArray=6;
 	private int lineSpaceBetweenUpperAndLowerAudioArray=128;
 	private int lineOffsetFFT=262;
+	private String previousSecond="00";
+	private StringBuilder currentSecond=new StringBuilder("00");
+	private int indexOfLastFour=0;
 	
 	public ProcessFile(String tableName) throws FileNotFoundException, UnsupportedEncodingException {
-		pinName=tableName;
-		myHandler.addTable(tableName);
-		writer = new PrintWriter("database/otherText.txt", "UTF-8");
+		penName=tableName;
+		myHandler.addTable();
 	}
 
 	public void ProcessSingleFile(String file) {
@@ -44,36 +45,45 @@ public class ProcessFile {
 	}
 
 	private void ProcessLine(String line) {
-		if(line.length()>300){
-			format1(line);
-		}
-		else{
-			otherFormat(line);
+		try {
+			if(line.length()>300){
+				format1(line);
+			}
+			else{
+				otherFormat(line);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			file=null;
 		}
 	}
 
-	private void format1(String line)
+	private void format1(String line) throws SQLException
 	{
+		//currentSecond.(Character.toString(line.charAt(0)));
+		//currentSecond.concat(Character.toString(line.charAt(1)));
+		currentSecond.setCharAt(0, line.charAt(0));
+		currentSecond.setCharAt(1, line.charAt(1));
+		if(!previousSecond.equals(currentSecond.toString()))
+		{
+			indexOfLastFour=0;
+			previousSecond=currentSecond.toString();
+		}
 		this.line=line;
 		StringBuilder sqlValues= new StringBuilder("VALUES (");
-		sqlValues.append("'");
-		sqlValues.append(pinName);//pinname
-		sqlValues.append("'");
-		sqlValues.append(",");
-		sqlValues.append(file.charAt(0));//month
+		sqlValues.append(penName);//penname first 4 numbers of primary key
+		sqlValues.append(file.charAt(0));//month next 2 numbers of primary key
 		sqlValues.append(file.charAt(1));
-		sqlValues.append(",");
-		sqlValues.append(file.charAt(2));//day
+		sqlValues.append(file.charAt(2));//day next 2 numbers of primary key
 		sqlValues.append(file.charAt(3));
-		sqlValues.append(",");
-		sqlValues.append(file.charAt(4));//hour
+		sqlValues.append(file.charAt(4));//hour next 2 numbers of primary key
 		sqlValues.append(file.charAt(5));
-		sqlValues.append(",");
-		sqlValues.append(file.charAt(6));//minute
+		sqlValues.append(file.charAt(6));//minute next 2 numbers of primary key
 		sqlValues.append(file.charAt(7));
-		sqlValues.append(",");
-		sqlValues.append(line.charAt(0));//second
-		sqlValues.append(line.charAt(1));
+		sqlValues.append(currentSecond);//second next 2 numbers of primary key
+		//sqlValues.append(Integer.toString(indexOfLastFour));//last 4 of primary key
+		sqlValues.append(String.format("%04d",indexOfLastFour));//last 4 of primary key
 		sqlValues.append(",");
 		sqlValues.append(line.charAt(2));//F1
 		sqlValues.append(",");
@@ -92,7 +102,8 @@ public class ProcessFile {
 			sqlValues.append(FFTArray(i));//FFT00-FFT63
 		}
 		sqlValues.append(");");//end of sql string
-		myHandler.addRow(sqlValues.toString());
+		myHandler.addRowMain(sqlValues.toString());
+		indexOfLastFour++;
 	}
 	
 	private String FFTArray(int i) {
@@ -107,9 +118,11 @@ public class ProcessFile {
 		return value.toString();
 	}
 
-	private void otherFormat(String line){
-		StringBuilder otherValues= new StringBuilder();
-		otherValues.append(pinName);//pinname
+	private void otherFormat(String line) throws SQLException{
+		StringBuilder otherValues= new StringBuilder("VALUES (NULL,");
+		otherValues.append("'");
+		otherValues.append(penName);//penname
+		otherValues.append("'");
 		otherValues.append(",");
 		otherValues.append(file.charAt(0));//month
 		otherValues.append(file.charAt(1));
@@ -123,8 +136,10 @@ public class ProcessFile {
 		otherValues.append(file.charAt(6));//minute
 		otherValues.append(file.charAt(7));
 		otherValues.append(",");
-		otherValues.append(line);
-		writer.println(otherValues);
+		otherValues.append("\""+line+"\"");
+		otherValues.append(");");//end of insert
+		myHandler.addRowOther(otherValues.toString());
+		//writer.println(otherValues);
 	}
 	
 	public void ProcessMultibleFiles(Path path) throws IOException {
@@ -137,7 +152,6 @@ public class ProcessFile {
 		// TODO Auto-generated method stub
 		myHandler.commit();
 		myHandler.close();
-		writer.close();
 		System.out.println("End of Processing");
 	}
 }
