@@ -42,6 +42,9 @@ public class GUIforApplication extends JFrame {
 	private JTextField penName;
 	private JLabel penText;
 
+	private JTextField sowName;
+	private JLabel sowText;
+	
 	private JTextField fileName;
 	private JLabel fileText;
 
@@ -69,25 +72,35 @@ public class GUIforApplication extends JFrame {
 		penName = new JTextField();
 		penName.setHorizontalAlignment(SwingConstants.LEFT);
 		add(penName, penNameSetup);
+		
+		GridBagConstraints sowTextSetup = MySetup(0, 2, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
+		sowText = new JLabel("Sow Name");
+		sowText.setHorizontalAlignment(SwingConstants.LEFT);
+		add(sowText, sowTextSetup);
 
-		GridBagConstraints fileTextSetup = MySetup(0, 3, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
+		GridBagConstraints sowNameSetup = MySetup(0, 3, 1, 8, GridBagConstraints.HORIZONTAL, objectPadding);
+		sowName = new JTextField();
+		sowName.setHorizontalAlignment(SwingConstants.LEFT);
+		add(sowName, sowNameSetup);
+
+		GridBagConstraints fileTextSetup = MySetup(0, 4, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
 		fileText = new JLabel("File Name");
 		fileText.setHorizontalAlignment(SwingConstants.LEFT);
 		add(fileText, fileTextSetup);
 
-		GridBagConstraints fileNameSetup = MySetup(0, 4, 1, 8, GridBagConstraints.HORIZONTAL, objectPadding);
+		GridBagConstraints fileNameSetup = MySetup(0, 5, 1, 8, GridBagConstraints.HORIZONTAL, objectPadding);
 		fileName = new JTextField("Browse for File Name");
 		fileName.setEnabled(false);
 		fileName.setHorizontalAlignment(SwingConstants.LEFT);
 		add(fileName, fileNameSetup);
 
-		GridBagConstraints submitSetup = MySetup(0, 5, 1, 2, GridBagConstraints.HORIZONTAL, objectPadding);
+		GridBagConstraints submitSetup = MySetup(0, 6, 1, 2, GridBagConstraints.HORIZONTAL, objectPadding);
 		submit = new JButton("submit");
 		submit.setEnabled(false);
 		submit.setHorizontalAlignment(SwingConstants.LEFT);
 		add(submit, submitSetup);
 
-		GridBagConstraints browseNameSetup = MySetup(8, 4, 1, 2, GridBagConstraints.HORIZONTAL, objectPadding);
+		GridBagConstraints browseNameSetup = MySetup(8, 5, 1, 2, GridBagConstraints.HORIZONTAL, objectPadding);
 		browse = new JButton("Browse");
 		browse.setHorizontalAlignment(SwingConstants.LEFT);
 		add(browse, browseNameSetup);
