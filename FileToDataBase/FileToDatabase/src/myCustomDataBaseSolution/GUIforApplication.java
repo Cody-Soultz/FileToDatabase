@@ -173,7 +173,7 @@ public class GUIforApplication extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ProcessFile myFileProcesser= new ProcessFile(penName.getText());
+				ProcessFile myFileProcesser= new ProcessFile(penName.getText(),sowName.getText());
 				if(isDirectory){
 					myFileProcesser.ProcessMultibleFiles(filePath);
 				}else{

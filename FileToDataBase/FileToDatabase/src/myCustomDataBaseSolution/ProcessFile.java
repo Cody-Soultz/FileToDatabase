@@ -17,8 +17,12 @@ public class ProcessFile {
 	/**
 	 * file path to use
 	 */
+	int[] audioValues = new int[128];
+	double audioOffset=0;
+	double audioAverage=0;
 	private String file = "";
 	String penName=null;
+	String sowName=null;
 	private DatabaseHandler myHandler= new DatabaseHandler();
 	private String line=null;
 	private int lineOffsetAudioArray=6;
@@ -28,8 +32,9 @@ public class ProcessFile {
 	private StringBuilder currentSecond=new StringBuilder("00");
 	private int indexOfLastFour=0;
 	
-	public ProcessFile(String tableName) throws FileNotFoundException, UnsupportedEncodingException {
+	public ProcessFile(String tableName,String sowName) throws FileNotFoundException, UnsupportedEncodingException {
 		penName=tableName;
+		this.sowName=sowName;
 		myHandler.addTable();
 	}
 
@@ -50,7 +55,7 @@ public class ProcessFile {
 				format1(line);
 			}
 			else{
-				otherFormat(line);
+				//otherFormat(line);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -71,7 +76,7 @@ public class ProcessFile {
 			previousSecond=currentSecond.toString();
 		}
 		this.line=line;
-		StringBuilder sqlValues= new StringBuilder("VALUES (");
+		StringBuilder sqlValues= new StringBuilder("VALUES (NULL,");
 		sqlValues.append(penName);//penname first 4 numbers of primary key
 		sqlValues.append(file.charAt(0));//month next 2 numbers of primary key
 		sqlValues.append(file.charAt(1));
@@ -97,15 +102,41 @@ public class ProcessFile {
 			sqlValues.append(",");
 			sqlValues.append(AudioArray(i));//AUDIO000-AUDIO127
 		}
+		sqlValues.append(",");
+		sqlValues.append(getAudioOffset());
+		sqlValues.append(",");
+		sqlValues.append(getAudioAverage());
 		for(int i=0;i<64;i++){
 			sqlValues.append(",");
 			sqlValues.append(FFTArray(i));//FFT00-FFT63
 		}
+		sqlValues.append(",");
+		sqlValues.append("'"+sowName+"'");//sowName
 		sqlValues.append(");");//end of sql string
 		myHandler.addRowMain(sqlValues.toString());
 		indexOfLastFour++;
 	}
 	
+	private String getAudioAverage() {
+		// TODO Auto-generated method stub
+		double sum=0;
+		for (int i=0;i<audioValues.length;i++){
+			sum+=Math.abs(((double)audioValues[i]-audioOffset));
+		}
+		audioAverage = sum/audioValues.length;
+		return Double.toString(audioAverage);
+	}
+
+	private String getAudioOffset() {
+		// TODO Auto-generated method stub
+		double sum=0;
+		for (int i=0;i<audioValues.length;i++){
+			sum+=(double)audioValues[i];
+		}
+		audioOffset= sum/(double)audioValues.length;
+		return Double.toString(audioOffset);
+	}
+
 	private String FFTArray(int i) {
 		return Integer.toString(((int)line.charAt(i+lineOffsetFFT)-32));
 	}
@@ -115,32 +146,33 @@ public class ProcessFile {
 		char upperChar = line.charAt(audioIndex+lineOffsetAudioArray);
 		char lowerChar = line.charAt(audioIndex+lineOffsetAudioArray+lineSpaceBetweenUpperAndLowerAudioArray);
 		value = ((int)upperChar*64+(int)lowerChar)-2080;
+		audioValues[audioIndex]=value;
 		return value.toString();
 	}
 
-	private void otherFormat(String line) throws SQLException{
-		StringBuilder otherValues= new StringBuilder("VALUES (NULL,");
-		otherValues.append("'");
-		otherValues.append(penName);//penname
-		otherValues.append("'");
-		otherValues.append(",");
-		otherValues.append(file.charAt(0));//month
-		otherValues.append(file.charAt(1));
-		otherValues.append(",");
-		otherValues.append(file.charAt(2));//day
-		otherValues.append(file.charAt(3));
-		otherValues.append(",");
-		otherValues.append(file.charAt(4));//hour
-		otherValues.append(file.charAt(5));
-		otherValues.append(",");
-		otherValues.append(file.charAt(6));//minute
-		otherValues.append(file.charAt(7));
-		otherValues.append(",");
-		otherValues.append("\""+line+"\"");
-		otherValues.append(");");//end of insert
-		myHandler.addRowOther(otherValues.toString());
-		//writer.println(otherValues);
-	}
+//	private void otherFormat(String line) throws SQLException{
+//		StringBuilder otherValues= new StringBuilder("VALUES (NULL,");
+//		otherValues.append("'");
+//		otherValues.append(penName);//penname
+//		otherValues.append("'");
+//		otherValues.append(",");
+//		otherValues.append(file.charAt(0));//month
+//		otherValues.append(file.charAt(1));
+//		otherValues.append(",");
+//		otherValues.append(file.charAt(2));//day
+//		otherValues.append(file.charAt(3));
+//		otherValues.append(",");
+//		otherValues.append(file.charAt(4));//hour
+//		otherValues.append(file.charAt(5));
+//		otherValues.append(",");
+//		otherValues.append(file.charAt(6));//minute
+//		otherValues.append(file.charAt(7));
+//		otherValues.append(",");
+//		otherValues.append("\""+line+"\"");
+//		otherValues.append(");");//end of insert
+//		myHandler.addRowOther(otherValues.toString());
+//		//writer.println(otherValues);
+//	}
 	
 	public void ProcessMultibleFiles(Path path) throws IOException {
 		DirectoryStream<Path> directoryStream = Files.newDirectoryStream(path);
