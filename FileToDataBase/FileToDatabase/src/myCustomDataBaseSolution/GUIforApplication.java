@@ -4,6 +4,8 @@
 package myCustomDataBaseSolution;
 //
 
+import java.awt.Color;
+
 //import java.io.IOException;
 //
 //import javax.swing.JFrame;
@@ -32,13 +34,18 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 public class GUIforApplication extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
+	private JTextPane systemOut;
+	
 	private JTextField penName;
 	private JLabel penText;
 
@@ -57,12 +64,14 @@ public class GUIforApplication extends JFrame {
 	private boolean isDirectory = false;
 	private Path filePath = null;
 
+	private JScrollPane SystemOutScroll;
+
 	public GUIforApplication() {
 		super("Add to Database");
 		setLayout(new GridBagLayout());
-
+		
 		int[] objectPadding = { 0, 0, 5, 5 };
-
+		
 		GridBagConstraints penTextSetup = MySetup(0, 0, 1, 4, GridBagConstraints.HORIZONTAL, objectPadding);
 		penText = new JLabel("Pen Name (Numbers Only XXXX)");
 		penText.setHorizontalAlignment(SwingConstants.LEFT);
@@ -104,7 +113,19 @@ public class GUIforApplication extends JFrame {
 		browse = new JButton("Browse");
 		browse.setHorizontalAlignment(SwingConstants.LEFT);
 		add(browse, browseNameSetup);
-
+		
+		GridBagConstraints systemOutSetup = MySetup(0,8,1,10, GridBagConstraints.HORIZONTAL, objectPadding);
+		systemOut = new JTextPane();
+		systemOut.setText("\n\n\n\n\n");
+		SystemOutScroll=new JScrollPane(systemOut,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		MessageConsole mc = new MessageConsole(systemOut);
+		mc.redirectOut(null,System.out);
+		mc.redirectErr(Color.RED, System.err);
+		mc.setMessageLines(100);
+		add(SystemOutScroll, systemOutSetup);
+		revalidate();
+		pack();
+		
 		penName.addKeyListener(new penNameKeyHandler());
 		submit.addActionListener(new submitButtonHandler());
 		browse.addActionListener(new browseButtonHandler());
@@ -169,20 +190,28 @@ public class GUIforApplication extends JFrame {
 	}
 
 	private class submitButtonHandler implements ActionListener {
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			try {
-				ProcessFile myFileProcesser= new ProcessFile(penName.getText(),sowName.getText());
-				if(isDirectory){
-					myFileProcesser.ProcessMultibleFiles(filePath);
-				}else{
-					myFileProcesser.ProcessSingleFile(filePath.toString());
-				}
-				myFileProcesser.closeDB();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+			startThread();
+		}
+
+		private void startThread() {
+			// TODO Auto-generated method stub
+			 new Thread() {
+			        public void run() {
+			        	try {
+							ProcessFile myFileProcesser= new ProcessFile(penName.getText(),sowName.getText());
+							if(isDirectory){
+								myFileProcesser.ProcessMultibleFiles(filePath);
+							}else{
+								myFileProcesser.ProcessSingleFile(filePath.toString());
+							}
+							myFileProcesser.closeDB();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+			        }
+			    }.start();
 		}
 	}
 

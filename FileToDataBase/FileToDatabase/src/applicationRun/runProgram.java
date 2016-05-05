@@ -23,7 +23,7 @@ public class runProgram {
 		// TODO Auto-generated method stub
 		GUIforApplication Application = new GUIforApplication(); 
 		Application.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Application.setSize(300, 230); 
+		Application.setSize(340, 350); 
 		Application.setVisible(true); 
 	}
 
