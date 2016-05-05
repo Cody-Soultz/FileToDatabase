@@ -117,7 +117,7 @@ public class GUIforApplication extends JFrame {
 		GridBagConstraints systemOutSetup = MySetup(0,8,1,10, GridBagConstraints.HORIZONTAL, objectPadding);
 		systemOut = new JTextPane();
 		systemOut.setText("\n\n\n\n\n");
-		SystemOutScroll=new JScrollPane(systemOut,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		SystemOutScroll=new JScrollPane(systemOut,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		MessageConsole mc = new MessageConsole(systemOut);
 		mc.redirectOut(null,System.out);
 		mc.redirectErr(Color.RED, System.err);

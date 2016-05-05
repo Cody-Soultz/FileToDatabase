@@ -1,5 +1,6 @@
 package myCustomDataBaseSolution;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -27,6 +28,7 @@ public class DatabaseHandler {
     public DatabaseHandler() {
         try {
             Class.forName("org.sqlite.JDBC");
+            makeDirIfNotExists("database");
             String dbURL = "jdbc:sqlite:database/dataSet.db";
             dbConnection = DriverManager.getConnection(dbURL);
             dbConnection.setAutoCommit(false);
@@ -46,7 +48,27 @@ public class DatabaseHandler {
         }
     }
     
-    public void close(){
+    private void makeDirIfNotExists(String directoryName) {
+		// TODO Auto-generated method stub
+		File directory = new File(directoryName);
+		if(!directory.exists()){
+			System.out.println("Creating Directory " + directoryName);
+			boolean result =false;
+			
+			try{
+				directory.mkdirs();
+				result=true;
+			}
+			catch(SecurityException se){
+				se.printStackTrace();
+			}
+			if(result){
+				System.out.println("DIR created");
+			}
+		}
+	}
+
+	public void close(){
     	try {
 			dbConnection.close();
 		} catch (SQLException e) {
